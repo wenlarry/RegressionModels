@@ -1,0 +1,88 @@
+---
+title: "Relationship of variables with miles per gallon"
+author: "wenlarry"
+date: "1/4/2017"
+output: word_document
+---
+**Executive Summary**
+
+An analysis of the relationship of variables with miles per gallon (mpg) using the 'mtcars' dataset. We use exploratory analysis and regression models to a) determine whether an automatic or manual transmission is better for mpg and b) quantify the mpg difference between automatic and manual transmissions.
+
+The results are that manual transmissions have higher mpgs. Our best case (step model) explains 83% of the variance of the mpg with p-values significant at 0.05 level. Also, the step model meets the basic assumptions of a linear regression through a residual plot analysis.
+
+**Exploratory Data Analysis**
+
+Load data (mtcar ) and change some variables to factor class. Also, change 'am' to 2 levels (automatic and manual).
+
+data(mtcars) 
+mtcars$cyl<-as.factor(mtcars$cyl)  mtcars$vs<-as.factor(mtcars$vs)
+mtcars$am<-factor(mtcars$am)
+mtcars$gear<-factor(mtcars$gear)
+mtcars$carb<-factor(mtcars$carb) 
+levels(mtcars$am)<-c("automatic,","manual") 
+
+
+Plot 1 in Appendix shows the relationship of the 2parameters (am and mpg). The manual transmissions have higher miles per gallon (mpg). As there could be bias in the dataset, we need to explore what other parameters have higher correlations to mpg than am. 
+
+Plot 2 in Appendix shows that mpg has other strong correlations than just 'am'. So a model based on 'mpg' alone is inaccurate. 
+
+**Regression Models**
+
+Use a base model with only 'am' as the predictor.
+
+```{r, base}
+#M1
+basefit<-lm(mpg~am,mtcars) 
+summary(basefit) 
+```
+M1shows that Adjusted R-squared is 0.3385. This means that the base model explains 34% of the variance of 'mpg'. 
+
+Given the need to include more predictors/parameters, we next use a full model with all the parameters
+
+```{r,full}
+#M2
+fullfit<-lm(mpg~.,mtcars) 
+summary(fullfit) 
+```
+M2 shows Adjusted R-squared is 0.8066 an improvement to the base model as 81% of the variance of 'mpg ' is explained. However, many of the p-values are not significant at 0.05. 
+
+We next use a step model to include significant variables.
+
+```{r, step}
+#M3
+stepfit<-step(fullfit, direction="both", trace=FALSE)  
+summary(stepfit) 
+```
+M3 is 'mpg ~ wt +qsec + am'. The Adjusted R-squared is 0.8336. This is an improvement to the full model as 83% of the variance of 'mpg' is explained. Also, all of the p-values are significant at 0.05
+
+Plot 3 in Apendix is a residual plot to test the step model. It shows that:
+
+1. Normal Q-Q plot shows that the points are close to the line, indicating a normal distribution
+2. Residual vs Leverage plot shows no outliers, with all points within 0.5 bands
+3. Residual vs Fitted plot shows no consistent pattern
+4. Scale -Location plot shows points that are randomnly distributed confirming the constant variance 
+
+Therefore, the basic assumptions of linear regression have been met in the step model (the best case) .
+
+**Appendix**
+
+Plot 1 (transmission vs mpg) 
+```{r , am} 
+#Plot 1
+boxplot(mpg~am,mtcars,xlab="Transmission")
+
+``` 
+Plot 2 (scatterplot matrix)
+
+```{r corr, message=FALSE, warning=FALSE}
+library(car) 
+scatterplot.matrix(~am  +cyl+disp  +hp+drat+wt+qsec |mpg, data=mtcars, main="MPG")
+
+```
+Plot 3 (residual plot)
+```{r res} 
+par(mfrow=c(2,2))
+plot(stepfit) 
+
+```
+END
